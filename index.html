@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speed Reader Application</title>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --text-color: #ffffff;
+            --pivot-color: #ff0000; /* Default Red */
+            --ui-gray: #333;
+            --ui-light-gray: #666;
+            --accent: #4a90e2;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+
+        /* Top: Text Input */
+        #input-section {
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            background-color: #111;
+            color: #ddd;
+            border: 1px solid var(--ui-gray);
+            padding: 10px;
+            font-size: 14px;
+            resize: vertical;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        /* Middle: Controls */
+        #controls-section {
+            width: 100%;
+            max-width: 800px;
+            background-color: #111;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--ui-gray);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        label {
+            font-size: 12px;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        select, input[type="color"] {
+            background: #222;
+            color: white;
+            border: 1px solid var(--ui-light-gray);
+            padding: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* Slider Logic */
+        .slider-container {
+            flex-grow: 1;
+            min-width: 250px;
+            position: relative;
+            height: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Visual trickery for double slider */
+        .range-wrapper {
+            position: relative;
+            height: 30px;
+        }
+        
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+            position: absolute;
+            top: 5px;
+            left: 0;
+            pointer-events: none; /* Let clicks pass through to handle layering */
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            pointer-events: auto; /* Re-enable pointer events for the thumb */
+            margin-top: -6px;
+            position: relative;
+            z-index: 10;
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: var(--ui-light-gray);
+            border-radius: 2px;
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .speed-display {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--accent);
+            text-align: right;
+        }
+
+        /* Bottom: The Reader Display */
+        #reader-container {
+            width: 100%;
+            max-width: 800px;
+            height: 250px;
+            border: 1px solid var(--ui-light-gray);
+            background-color: black;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            border-radius: 4px;
+        }
+
+        /* The Reticle (Target Lines) */
+        .reticle {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            box-sizing: border-box;
+        }
+
+        /* Top and bottom target notch */
+        .reticle::before, .reticle::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px; /* Thickness of the line */
+            height: 30px; /* Length of the line */
+            background-color: var(--ui-light-gray);
+            opacity: 0.5;
+        }
+        .reticle::before { top: 20px; }
+        .reticle::after { bottom: 20px; }
+
+        /* Horizontal guidelines (optional visual enhancement) */
+        .reticle-guides {
+            position: absolute;
+            top: 50%;
+            left: 10%;
+            right: 10%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent 0%, var(--ui-gray) 20%, transparent 45%, transparent 55%, var(--ui-gray) 80%, transparent 100%);
+            transform: translateY(-50%);
+        }
+
+        /* The Word Grid - This is the magic for alignment */
+        #word-display {
+            display: grid;
+            /* Three columns: Left Context, Pivot Letter, Right Context */
+            grid-template-columns: 1fr auto 1fr; 
+            align-items: center;
+            width: 100%;
+            font-size: 48px; /* Base size, adjusted by JS */
+            user-select: none;
+        }
+
+        .w-left {
+            text-align: right;
+            color: var(--text-color);
+        }
+
+        .w-pivot {
+            text-align: center;
+            color: var(--pivot-color);
+            font-weight: bold;
+            padding: 0 1px; /* Slight breathing room */
+        }
+
+        .w-right {
+            text-align: left;
+            color: var(--text-color);
+        }
+
+        /* Action Buttons */
+        .actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 20px;
+        }
+
+        button {
+            padding: 10px 30px;
+            font-size: 16px;
+            background-color: var(--ui-gray);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover { background-color: var(--ui-light-gray); }
+        button.primary { background-color: var(--accent); }
+        button.primary:hover { background-color: #357abd; }
+
+    </style>
+</head>
+<body>
+
+    <div id="input-section">
+        <textarea id="sourceText" placeholder="Paste your text here to begin reading...">Speed reading is the process of rapidly recognizing and absorbing phrases or sentences on a page all at once, rather than identifying individual words.</textarea>
+    </div>
+
+    <div id="controls-section">
+        
+        <div class="control-group">
+            <label>Font</label>
+            <select id="fontSelect">
+                <option value="Arial, sans-serif">Arial</option>
+                <option value="'Courier New', monospace">Courier New</option>
+                <option value="Georgia, serif">Georgia</option>
+                <option value="'Times New Roman', serif">Times New Roman</option>
+                <option value="Verdana, sans-serif">Verdana</option>
+                <option value="Tahoma, sans-serif">Tahoma</option>
+                <option value="Impact, sans-serif">Impact</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>Text Color</label>
+            <input type="color" id="textColor" value="#ffffff">
+        </div>
+        <div class="control-group">
+            <label>Pivot Color</label>
+            <input type="color" id="pivotColor" value="#ff0000">
+        </div>
+
+        <div class="slider-container">
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                <label>Speed (WPM)</label>
+                <span class="speed-display" id="wpmDisplay">300 WPM</span>
+            </div>
+            
+            <div class="range-wrapper">
+                <input type="range" id="speedSlider" min="10" max="1000" value="300">
+                <input type="range" id="endSpeedSlider" min="10" max="1000" value="600" style="display: none; opacity: 0.7;">
+            </div>
+        </div>
+
+        <div class="toggle-container">
+            <input type="checkbox" id="gradualToggle">
+            <label for="gradualToggle">Gradual Increase</label>
+        </div>
+    </div>
+
+    <div id="reader-container">
+        <div class="reticle"></div>
+        <div class="reticle-guides"></div>
+        
+        <div id="word-display">
+            <span class="w-left">Speed</span>
+            <span class="w-pivot">R</span>
+            <span class="w-right">eader</span>
+        </div>
+    </div>
+
+    <div class="actions">
+        <button onclick="resetReader()">Reset</button>
+        <button class="primary" id="playPauseBtn" onclick="togglePlay()">Start</button>
+    </div>
+
+    <script>
+        // --- Configuration & DOM Elements ---
+        const sourceText = document.getElementById('sourceText');
+        const wordDisplay = document.getElementById('word-display');
+        const wLeft = document.querySelector('.w-left');
+        const wPivot = document.querySelector('.w-pivot');
+        const wRight = document.querySelector('.w-right');
+        const fontSelect = document.getElementById('fontSelect');
+        const textColorInput = document.getElementById('textColor');
+        const pivotColorInput = document.getElementById('pivotColor');
+        const speedSlider = document.getElementById('speedSlider');
+        const endSpeedSlider = document.getElementById('endSpeedSlider');
+        const gradualToggle = document.getElementById('gradualToggle');
+        const wpmDisplay = document.getElementById('wpmDisplay');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+
+        // --- State Variables ---
+        let words = [];
+        let currentIndex = 0;
+        let isPlaying = false;
+        let timer = null;
+        let isGradual = false;
+
+        // --- Event Listeners ---
+        
+        // Update Colors
+        textColorInput.addEventListener('input', (e) => {
+            document.documentElement.style.setProperty('--text-color', e.target.value);
+        });
+        pivotColorInput.addEventListener('input', (e) => {
+            document.documentElement.style.setProperty('--pivot-color', e.target.value);
+        });
+
+        // Update Font
+        fontSelect.addEventListener('change', (e) => {
+            wordDisplay.style.fontFamily = e.target.value;
+        });
+
+        // Toggle Gradual Mode
+        gradualToggle.addEventListener('change', (e) => {
+            isGradual = e.target.checked;
+            if (isGradual) {
+                endSpeedSlider.style.display = 'block';
+                wpmDisplay.innerText = `${speedSlider.value} → ${endSpeedSlider.value} WPM`;
+            } else {
+                endSpeedSlider.style.display = 'none';
+                wpmDisplay.innerText = `${speedSlider.value} WPM`;
+            }
+        });
+
+        // Slider Updates
+        speedSlider.addEventListener('input', updateWpmLabel);
+        endSpeedSlider.addEventListener('input', updateWpmLabel);
+
+        function updateWpmLabel() {
+            if (isGradual) {
+                // Ensure Min is not > Max for logic sanity, though not strictly required
+                wpmDisplay.innerText = `${speedSlider.value} → ${endSpeedSlider.value} WPM`;
+            } else {
+                wpmDisplay.innerText = `${speedSlider.value} WPM`;
+            }
+        }
+
+        // --- Core Logic ---
+
+        function processText() {
+            // Split text by spaces, newlines, tabs, and filter empty strings
+            const raw = sourceText.value;
+            // Clean up text: replace newlines with spaces
+            const cleaned = raw.replace(/\n/g, " ");
+            words = cleaned.split(' ').filter(w => w.length > 0);
+        }
+
+        function togglePlay() {
+            if (isPlaying) {
+                pause();
+            } else {
+                start();
+            }
+        }
+
+        function start() {
+            if (words.length === 0) processText();
+            if (words.length === 0) return; // Still empty?
+            
+            // If we reached the end, restart
+            if (currentIndex >= words.length) {
+                currentIndex = 0;
+            }
+
+            isPlaying = true;
+            playPauseBtn.innerText = "Pause";
+            playPauseBtn.classList.remove('primary'); // Visual toggle
+            
+            runLoop();
+        }
+
+        function pause() {
+            isPlaying = false;
+            clearTimeout(timer);
+            playPauseBtn.innerText = "Resume";
+            playPauseBtn.classList.add('primary');
+        }
+
+        function resetReader() {
+            pause();
+            currentIndex = 0;
+            processText();
+            if(words.length > 0) renderWord(words[0]);
+            playPauseBtn.innerText = "Start";
+        }
+
+        function getPivotIndex(word) {
+            // Find the middle character. 
+            // 1 letter: index 0
+            // 2 letters: index 0 (left bias) or 1. Let's do Math.floor((length-1)/2)
+            // 5 letters: index 2.
+            const len = word.length;
+            if (len === 1) return 0;
+            return Math.floor((len - 1) / 2);
+        }
+
+        function renderWord(word) {
+            if (!word) return;
+
+            const pivotIndex = getPivotIndex(word);
+            const leftPart = word.substring(0, pivotIndex);
+            const pivotChar = word.substring(pivotIndex, pivotIndex + 1);
+            const rightPart = word.substring(pivotIndex + 1);
+
+            wLeft.innerText = leftPart;
+            wPivot.innerText = pivotChar;
+            wRight.innerText = rightPart;
+        }
+
+        function runLoop() {
+            if (!isPlaying) return;
+
+            if (currentIndex >= words.length) {
+                pause();
+                playPauseBtn.innerText = "Restart";
+                return;
+            }
+
+            const word = words[currentIndex];
+            renderWord(word);
+
+            // Calculate Delay
+            let currentWPM = parseInt(speedSlider.value);
+
+            if (isGradual) {
+                const startWPM = parseInt(speedSlider.value);
+                const endWPM = parseInt(endSpeedSlider.value);
+                // Calculate progress (0.0 to 1.0)
+                const progress = currentIndex / words.length;
+                currentWPM = startWPM + (endWPM - startWPM) * progress;
+            }
+
+            // Standard Formula: 60 seconds / WPM = seconds per word
+            // Convert to ms: 60000 / WPM
+            // Add a slight pause for punctuation (comma, period)
+            let delay = 60000 / currentWPM;
+
+            const lastChar = word.slice(-1);
+            if (lastChar === '.' || lastChar === '!' || lastChar === '?') {
+                delay = delay * 1.5; // 50% longer pause for sentences
+            } else if (lastChar === ',' || lastChar === ';' || lastChar === ':') {
+                delay = delay * 1.2; // 20% longer pause for clauses
+            }
+
+            currentIndex++;
+            timer = setTimeout(runLoop, delay);
+        }
+
+        // Initialize display
+        resetReader();
+
+    </script>
+</body>
+</html>
