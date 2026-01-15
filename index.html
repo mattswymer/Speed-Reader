@@ -6,26 +6,26 @@
     <title>Speed Reader Pro</title>
     <style>
         :root {
-            /* Color Palette */
+            /* Theme Variables */
             --bg-body: #050505;
-            --bg-panel: #111111;
-            --border-color: #333333;
+            --bg-panel: #121212;
+            --border-color: #2a2a2a;
             --text-primary: #ffffff;
-            --text-muted: #888888;
-            --accent-color: #4a90e2; /* Blue */
-            --highlight-color: #ff3b30; /* Red */
-            
-            /* Spacing & sizing */
-            --radius: 8px;
-            --container-width: 900px;
+            --text-secondary: #a0a0a0;
+            --accent-color: #4a90e2; 
+            --accent-hover: #357abd;
+            --pivot-color: #d32f2f; /* Default Red */
+            --radius: 6px;
+            --container-max: 900px;
         }
 
-        * { box-sizing: border-box; }
-
+        /* Reset & Base */
+        * { box-sizing: border-box; outline: none; }
+        
         body {
             background-color: var(--bg-body);
             color: var(--text-primary);
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
             margin: 0;
             padding: 20px;
             display: flex;
@@ -34,138 +34,125 @@
             min-height: 100vh;
         }
 
-        h1 {
-            font-weight: 300;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            font-size: 24px;
+        /* Header */
+        header {
+            width: 100%;
+            max-width: var(--container-max);
             margin-bottom: 20px;
-            color: var(--text-muted);
-            border-bottom: 1px solid var(--accent-color);
-            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-end;
         }
 
-        /* --- Layout Containers --- */
+        h1 {
+            font-weight: 200;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-size: 22px;
+            margin: 0;
+            color: var(--text-secondary);
+        }
+        
+        h1 span { color: var(--accent-color); font-weight: 400; }
+
+        /* Layout */
         .app-container {
             width: 100%;
-            max-width: var(--container-width);
+            max-width: var(--container-max);
             display: flex;
             flex-direction: column;
             gap: 20px;
         }
 
-        /* --- Text Input Section --- */
-        .input-panel textarea {
-            width: 100%;
-            height: 100px;
-            background-color: var(--bg-panel);
-            color: #ddd;
-            border: 1px solid var(--border-color);
-            padding: 15px;
-            font-size: 14px;
-            line-height: 1.6;
-            resize: vertical;
-            border-radius: var(--radius);
-            font-family: inherit;
-            transition: border-color 0.2s;
-        }
-        .input-panel textarea:focus {
-            border-color: var(--accent-color);
-            outline: none;
-        }
-
-        /* --- Controls Dashboard --- */
-        .dashboard {
+        /* Panel Styling */
+        .panel {
             background-color: var(--bg-panel);
             border: 1px solid var(--border-color);
             border-radius: var(--radius);
             padding: 20px;
-            display: grid;
-            grid-template-columns: 1fr 1fr; /* Two main columns */
-            gap: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
 
-        /* Group Headers */
-        .control-section h3 {
+        /* 1. Text Input */
+        textarea {
+            width: 100%;
+            height: 100px;
+            background-color: #0a0a0a;
+            color: #ccc;
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            font-size: 14px;
+            line-height: 1.5;
+            resize: vertical;
+            border-radius: 4px;
+            font-family: inherit;
+            transition: border 0.2s;
+        }
+        textarea:focus { border-color: var(--accent-color); }
+
+        /* 2. Controls Dashboard */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        .control-group h3 {
             font-size: 11px;
             text-transform: uppercase;
+            letter-spacing: 1px;
             color: var(--accent-color);
             margin: 0 0 15px 0;
-            letter-spacing: 1px;
+            border-bottom: 1px solid #222;
+            padding-bottom: 5px;
         }
 
-        .control-grid {
+        .grid-2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
-            align-items: start;
         }
 
-        /* Form Elements */
+        /* Inputs */
         label {
             display: block;
             font-size: 11px;
-            color: var(--text-muted);
-            margin-bottom: 5px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
         }
 
         select, input[type="number"], input[type="color"] {
-            background: #222;
+            width: 100%;
+            background: #1a1a1a;
             color: white;
-            border: 1px solid #444;
+            border: 1px solid #333;
             padding: 8px;
             border-radius: 4px;
-            width: 100%;
             font-size: 13px;
         }
         
-        input[type="color"] {
-            padding: 0;
-            height: 34px;
-            cursor: pointer;
-        }
-
-        /* Toggle Switch Styling */
-        .toggle-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 5px;
-        }
-        input[type="checkbox"] {
-            accent-color: var(--accent-color);
-            width: 16px;
-            height: 16px;
-            cursor: pointer;
-        }
-        .toggle-label {
-            font-size: 13px;
-            color: #fff;
-            cursor: pointer;
-        }
-
-        /* --- Slider Component --- */
-        .slider-wrapper {
-            grid-column: 1 / -1; /* Span full width of timing section */
-            margin-top: 10px;
-        }
+        input[type="color"] { padding: 0; height: 34px; cursor: pointer; }
+        
+        /* Sliders */
+        .slider-section { margin-top: 15px; }
         
         .slider-header {
             display: flex;
             justify-content: space-between;
             margin-bottom: 10px;
+            font-size: 11px;
+            color: var(--text-secondary);
         }
-        .speed-readout {
-            font-family: monospace;
-            color: var(--accent-color);
-            font-weight: bold;
-        }
+        
+        .val-display { color: var(--accent-color); font-family: monospace; font-weight: bold; }
 
-        /* Dual Slider Track Trick */
-        .dual-slider-track {
+        .slider-stack {
             position: relative;
             height: 30px;
         }
+
         input[type=range] {
             -webkit-appearance: none;
             width: 100%;
@@ -175,159 +162,183 @@
             left: 0;
             pointer-events: none; 
         }
+
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            height: 18px;
-            width: 18px;
+            height: 16px;
+            width: 16px;
             border-radius: 50%;
             background: var(--accent-color);
             cursor: pointer;
             pointer-events: auto; 
-            margin-top: -7px;
+            margin-top: -6px;
             position: relative;
             z-index: 10;
-            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+            box-shadow: 0 0 0 2px var(--bg-panel); 
         }
+
         input[type=range]::-webkit-slider-runnable-track {
             width: 100%;
             height: 4px;
-            cursor: pointer;
-            background: #444;
+            background: #333;
             border-radius: 2px;
         }
 
-        /* --- The Reader HUD --- */
-        #reader-display {
+        /* Checkbox */
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 5px;
+            font-size: 12px;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+        input[type="checkbox"] { accent-color: var(--accent-color); cursor: pointer; }
+
+        /* 3. Reader HUD */
+        #reader-hud {
             width: 100%;
-            height: 300px;
+            height: 320px;
             background-color: #000;
             border: 1px solid var(--border-color);
             border-radius: var(--radius);
             position: relative;
             display: flex;
-            align-items: center;
+            flex-direction: column;
             justify-content: center;
             overflow: hidden;
-            box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
+            box-shadow: inset 0 0 80px rgba(0,0,0,0.9);
         }
 
-        /* Optical Guides */
-        .guide-lines {
+        /* --- UPDATED RETICLE STYLES --- */
+        .reticle {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
             pointer-events: none;
+            z-index: 1; /* Behind text */
         }
-        /* Vertical notches */
-        .guide-lines::before, .guide-lines::after {
-            content: '';
+        
+        /* Vertical Notches stuck to edges */
+        .reticle .notch {
             position: absolute;
             left: 50%;
-            transform: translateX(-0.5px);
             width: 1px;
-            height: 20px;
-            background-color: #444;
+            height: 25px; /* Slightly longer */
+            background: #333;
+            transform: translateX(-50%);
         }
-        .guide-lines::before { top: 30px; }
-        .guide-lines::after { bottom: 30px; }
-        
-        /* Horizontal faint line */
-        .guide-lines .horizon {
-            position: absolute;
-            top: 50%;
-            left: 10%;
-            right: 10%;
-            height: 1px;
-            background: linear-gradient(90deg, transparent 0%, #222 20%, transparent 45%, transparent 55%, #222 80%, transparent 100%);
-        }
+        .notch-top { top: 0; }
+        .notch-bottom { bottom: 0; }
 
-        /* Word Rendering */
-        .word-container {
+        /* Horizontal Framing Lines */
+        .reticle .guide-horiz {
+            position: absolute;
+            left: 2%; 
+            right: 2%;
+            height: 1px;
+            /* Faint gradient, fades out completely in the center gap */
+            background: linear-gradient(90deg, rgba(255,255,255,0.1) 0%, transparent 40%, transparent 60%, rgba(255,255,255,0.1) 100%);
+        }
+        /* Positioned above and below center to frame text */
+        .guide-above { top: 38%; }
+        .guide-below { bottom: 38%; }
+
+
+        /* Word Display */
+        .word-stage {
+            position: relative;
+            z-index: 10; /* In front of reticle */
             display: grid;
             grid-template-columns: 1fr auto 1fr; 
-            align-items: baseline; /* Better font alignment */
+            align-items: baseline; 
             width: 100%;
-            font-size: 48px;
+            font-size: 52px;
             user-select: none;
             line-height: 1;
+            padding-bottom: 4px; 
         }
-        .w-part { transition: color 0.2s; }
-        .w-left { text-align: right; }
+        .w-left { text-align: right; color: var(--text-primary); }
         .w-pivot { 
             text-align: center; 
             font-weight: 600; 
-            padding: 0 1px;
+            padding: 0 1px; 
+            color: var(--pivot-color); 
         }
-        .w-right { text-align: left; }
+        .w-right { text-align: left; color: var(--text-primary); }
 
-        /* --- Action Bar --- */
+        /* HUD Stats */
+        .hud-stat {
+            position: absolute;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #555;
+            pointer-events: none;
+            z-index: 5;
+        }
+        .stat-wpm { bottom: 15px; right: 20px; }
+        .stat-progress { bottom: 0; left: 0; height: 3px; background: var(--accent-color); width: 0%; transition: width 0.1s linear; }
+
+        /* 4. Action Bar */
         .action-bar {
             display: flex;
             justify-content: center;
             gap: 20px;
+            margin-top: 10px;
         }
 
         button {
-            padding: 12px 40px;
-            font-size: 16px;
-            font-weight: 600;
+            padding: 14px 45px;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 1px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            transition: all 0.2s;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            transition: all 0.2s;
         }
         
-        .btn-reset {
-            background-color: #333;
-            color: #ccc;
-        }
-        .btn-reset:hover { background-color: #444; color: white; }
+        .btn-reset { background: #222; color: #888; }
+        .btn-reset:hover { background: #333; color: white; }
 
-        .btn-primary {
-            background-color: var(--accent-color);
-            color: white;
-            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
-        }
-        .btn-primary:hover {
-            background-color: #357abd;
-            transform: translateY(-1px);
-        }
-        .btn-primary:active { transform: translateY(1px); }
+        .btn-play { background: var(--accent-color); color: white; box-shadow: 0 4px 15px rgba(74, 144, 226, 0.2); }
+        .btn-play:hover { background: var(--accent-hover); transform: translateY(-1px); }
+        .btn-play:active { transform: translateY(1px); }
 
-        /* Mobile Adjustments */
+        /* Mobile Breakpoint */
         @media (max-width: 700px) {
-            .dashboard { grid-template-columns: 1fr; }
+            .dashboard { grid-template-columns: 1fr; gap: 20px; }
         }
-
     </style>
 </head>
 <body>
 
-    <h1>Speed Reader</h1>
+    <header>
+        <h1>Speed Reader <span>Pro</span></h1>
+    </header>
 
     <div class="app-container">
         
-        <div class="input-panel">
-            <textarea id="sourceText" placeholder="Paste your text here...">Eye fatigue while reading often comes from the constant, repetitive motion our eyes are forced to make across a static page or screen. Each line requires a sequence of small jumps called saccades, punctuated by brief stops where the brain processes text. Over long periods, this back-and-forth motion strains the eye muscles, dries the eyes, and increases cognitive load as readers repeatedly lose their place, reorient, and refocus. The result is familiar to many readers: headaches, blurred vision, reduced focus, and a gradual decline in reading efficiency the longer a session lasts.
+        <div class="panel">
+            <textarea id="sourceText" placeholder="Paste your text here to begin reading...">Eye fatigue while reading often comes from the constant, repetitive motion our eyes are forced to make across a static page or screen. Each line requires a sequence of small jumps called saccades, punctuated by brief stops where the brain processes text. Over long periods, this back-and-forth motion strains the eye muscles, dries the eyes, and increases cognitive load as readers repeatedly lose their place, reorient, and refocus. The result is familiar to many readers: headaches, blurred vision, reduced focus, and a gradual decline in reading efficiency the longer a session lasts.
 When the words move instead of the eyes, much of that physical strain is reduced. Techniques such as rapid serial visual presentation (RSVP) keep the text centered in a fixed focal point, allowing the eyes to remain relatively still while the brain does the work of processing language. By eliminating constant saccades and regressions, readers expend less energy on eye movement and more on comprehension. This can feel surprisingly natural after a short adjustment period, as the visual system shifts from navigation to absorption.
 This change in mechanics can also improve both reading speed and understanding. With fewer interruptions from line breaks, page turns, or rereading lost spots, readers maintain a more consistent rhythm and cognitive flow. The brain receives information in a steady stream, which can enhance pattern recognition and reduce mental friction. For many readers, especially those prone to fatigue or distraction, moving text creates a smoother, more sustainable reading experience that supports faster intake without sacrificing comprehension.</textarea>
         </div>
 
-        <div class="dashboard">
+        <div class="panel dashboard">
             
-            <div class="control-section">
+            <div class="control-group">
                 <h3>Visual Settings</h3>
-                <div class="control-grid">
+                <div class="grid-2">
                     <div>
                         <label>Font Family</label>
                         <select id="fontSelect">
                             <option value="Arial, sans-serif">Arial</option>
+                            <option value="'Inter', sans-serif">Inter (System)</option>
                             <option value="'Courier New', monospace">Courier New</option>
                             <option value="Georgia, serif">Georgia</option>
-                            <option value="'Times New Roman', serif">Times New Roman</option>
                             <option value="Verdana, sans-serif">Verdana</option>
-                            <option value="Impact, sans-serif">Impact</option>
                         </select>
                     </div>
                     <div>
@@ -338,14 +349,14 @@ This change in mechanics can also improve both reading speed and understanding. 
                     </div>
                     <div>
                         <label>Pivot Color</label>
-                        <input type="color" id="pivotColor" value="#ff3b30">
+                        <input type="color" id="pivotColor" value="#d32f2f">
                     </div>
                 </div>
             </div>
 
-            <div class="control-section">
+            <div class="control-group">
                 <h3>Timing & Playback</h3>
-                <div class="control-grid">
+                <div class="grid-2">
                     <div>
                         <label>Pause Mode</label>
                         <select id="pauseMode">
@@ -354,274 +365,270 @@ This change in mechanics can also improve both reading speed and understanding. 
                         </select>
                     </div>
                     <div>
-                        <label>Pause Value</label>
+                        <label>Value</label>
                         <input type="number" id="pauseValue" value="2.0" step="0.1">
                     </div>
                 </div>
 
-                <div class="slider-wrapper">
+                <div class="slider-section">
                     <div class="slider-header">
-                        <label>Speed (Words Per Minute)</label>
-                        <span class="speed-readout" id="wpmDisplay">200 → 800 WPM</span>
+                        <span>Reading Speed</span>
+                        <span class="val-display" id="wpmReadout">200 → 800 WPM</span>
                     </div>
-                    
-                    <div class="dual-slider-track">
-                        <input type="range" id="speedMin" min="50" max="1500" value="200">
-                        <input type="range" id="speedMax" min="50" max="1500" value="800">
+                    <div class="slider-stack">
+                        <input type="range" id="speedMin" min="50" max="1500" value="200" step="10">
+                        <input type="range" id="speedMax" min="50" max="1500" value="800" step="10">
                     </div>
-
-                    <div class="toggle-row">
+                    <label class="checkbox-row">
                         <input type="checkbox" id="gradualToggle" checked>
-                        <label for="gradualToggle" class="toggle-label">Gradually Increase Speed</label>
-                    </div>
+                        Gradually increase speed
+                    </label>
                 </div>
             </div>
         </div>
 
-        <div id="reader-display">
-            <div class="guide-lines">
-                <div class="horizon"></div>
+        <div id="reader-hud">
+            <div class="reticle">
+                <div class="notch notch-top"></div>
+                <div class="notch notch-bottom"></div>
+                <div class="guide-horiz guide-above"></div>
+                <div class="guide-horiz guide-below"></div>
             </div>
-            
-            <div class="word-container">
-                <span class="w-part w-left" id="disp-left">Speed</span>
-                <span class="w-part w-pivot" id="disp-pivot">R</span>
-                <span class="w-part w-right" id="disp-right">eader</span>
+
+            <div class="word-stage">
+                <span class="w-left" id="d-left">Speed</span>
+                <span class="w-pivot" id="d-pivot">R</span>
+                <span class="w-right" id="d-right">eader</span>
             </div>
+
+            <div class="hud-stat stat-wpm" id="live-wpm">READY</div>
+            <div class="hud-stat stat-progress" id="progress-bar"></div>
         </div>
 
         <div class="action-bar">
-            <button class="btn-reset" onclick="app.reset()">Reset</button>
-            <button class="btn-primary" id="btn-play" onclick="app.togglePlay()">Start Reading</button>
+            <button class="btn-reset" onclick="app.reset()">Reset (Esc)</button>
+            <button class="btn-play" id="btn-play" onclick="app.togglePlay()">Start Reading (Space)</button>
         </div>
 
     </div>
 
     <script>
         /**
-         * SpeedReader Logic
-         * Uses a class-based structure for cleaner state management.
-         * Pre-calculates word parsing to ensure high-performance rendering.
+         * Speed Reader Pro - Gold Master
          */
         class SpeedReader {
             constructor() {
-                // DOM Elements
-                this.dom = {
-                    textInput: document.getElementById('sourceText'),
-                    left: document.getElementById('disp-left'),
-                    pivot: document.getElementById('disp-pivot'),
-                    right: document.getElementById('disp-right'),
-                    wpmDisplay: document.getElementById('wpmDisplay'),
-                    btnPlay: document.getElementById('btn-play'),
-                    sliderMin: document.getElementById('speedMin'),
-                    sliderMax: document.getElementById('speedMax'),
-                    toggleGradual: document.getElementById('gradualToggle'),
-                    fontSelect: document.getElementById('fontSelect'),
-                    colorText: document.getElementById('textColor'),
-                    colorPivot: document.getElementById('pivotColor'),
-                    pauseMode: document.getElementById('pauseMode'),
-                    pauseValue: document.getElementById('pauseValue'),
-                    wordContainer: document.querySelector('.word-container')
+                // DOM Cache
+                this.el = {
+                    text: document.getElementById('sourceText'),
+                    left: document.getElementById('d-left'),
+                    pivot: document.getElementById('d-pivot'),
+                    right: document.getElementById('d-right'),
+                    wpmLabel: document.getElementById('wpmReadout'),
+                    liveWpm: document.getElementById('live-wpm'),
+                    progress: document.getElementById('progress-bar'),
+                    playBtn: document.getElementById('btn-play'),
+                    minSlide: document.getElementById('speedMin'),
+                    maxSlide: document.getElementById('speedMax'),
+                    gradual: document.getElementById('gradualToggle'),
+                    font: document.getElementById('fontSelect'),
+                    cText: document.getElementById('textColor'),
+                    cPivot: document.getElementById('pivotColor'),
+                    pMode: document.getElementById('pauseMode'),
+                    pValue: document.getElementById('pauseValue'),
+                    stage: document.querySelector('.word-stage')
                 };
 
-                // State
-                this.state = {
-                    queue: [],          // Pre-processed word objects
-                    index: 0,           // Current word index
-                    isPlaying: false,
-                    timer: null,
-                    isGradual: true
-                };
+                // Internal State
+                this.queue = [];
+                this.index = 0;
+                this.isPlaying = false;
+                this.timer = null;
+                this.isGradual = true;
+                this.expectedTime = 0;
 
-                this.initListeners();
-                this.updateUI(); // Initial visual sync
+                this.initEvents();
+                this.applyInitialColors(); 
+                this.updateSettingsUI();
             }
 
-            initListeners() {
-                // Sliders
-                this.dom.sliderMin.addEventListener('input', () => this.handleSliderChange());
-                this.dom.sliderMax.addEventListener('input', () => this.handleSliderChange());
+            initEvents() {
+                // UI Controls
+                this.el.minSlide.addEventListener('input', () => this.updateSettingsUI());
+                this.el.maxSlide.addEventListener('input', () => this.updateSettingsUI());
+                this.el.gradual.addEventListener('change', (e) => {
+                    this.isGradual = e.target.checked;
+                    this.el.maxSlide.style.display = this.isGradual ? 'block' : 'none';
+                    this.updateSettingsUI();
+                });
+
+                // Style Updates
+                this.el.cText.addEventListener('input', e => {
+                    this.el.left.style.color = e.target.value;
+                    this.el.right.style.color = e.target.value;
+                });
                 
-                // Toggle
-                this.dom.toggleGradual.addEventListener('change', (e) => {
-                    this.state.isGradual = e.target.checked;
-                    this.dom.sliderMax.style.display = this.state.isGradual ? 'block' : 'none';
-                    this.handleSliderChange();
+                // UPDATE CSS VAR for Pivot Color
+                this.el.cPivot.addEventListener('input', e => {
+                    document.documentElement.style.setProperty('--pivot-color', e.target.value);
                 });
 
-                // Visuals
-                this.dom.colorText.addEventListener('input', (e) => {
-                    this.dom.left.style.color = e.target.value;
-                    this.dom.right.style.color = e.target.value;
-                });
-                this.dom.colorPivot.addEventListener('input', (e) => {
-                    this.dom.pivot.style.color = e.target.value;
-                });
-                this.dom.fontSelect.addEventListener('change', (e) => {
-                    this.dom.wordContainer.style.fontFamily = e.target.value;
-                });
+                this.el.font.addEventListener('change', e => this.el.stage.style.fontFamily = e.target.value);
 
-                // Pause Mode Logic
-                this.dom.pauseMode.addEventListener('change', (e) => {
-                    if (e.target.value === 'relative') {
-                        this.dom.pauseValue.value = "2.0";
-                        this.dom.pauseValue.step = "0.1";
+                // Pause Mode Defaults
+                this.el.pMode.addEventListener('change', e => {
+                    if(e.target.value === 'relative') {
+                        this.el.pValue.value = "2.0";
+                        this.el.pValue.step = "0.1";
                     } else {
-                        this.dom.pauseValue.value = "400"; // ms
-                        this.dom.pauseValue.step = "50";
+                        this.el.pValue.value = "400";
+                        this.el.pValue.step = "50";
+                    }
+                });
+
+                // Keyboard Shortcuts
+                document.addEventListener('keydown', (e) => {
+                    if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+                    if (e.code === 'Space') {
+                        e.preventDefault();
+                        this.togglePlay();
+                    }
+                    if (e.code === 'Escape') {
+                        e.preventDefault();
+                        this.reset();
                     }
                 });
             }
 
-            handleSliderChange() {
-                const minVal = parseInt(this.dom.sliderMin.value);
-                const maxVal = parseInt(this.dom.sliderMax.value);
-
-                if (this.state.isGradual) {
-                    this.dom.wpmDisplay.innerText = `${minVal} → ${maxVal} WPM`;
-                } else {
-                    this.dom.wpmDisplay.innerText = `${minVal} WPM`;
-                }
+            // Ensures the color picker value is applied to the CSS variable on load
+            applyInitialColors() {
+                const pivotHex = this.el.cPivot.value;
+                document.documentElement.style.setProperty('--pivot-color', pivotHex);
+                
+                const textHex = this.el.cText.value;
+                this.el.left.style.color = textHex;
+                this.el.right.style.color = textHex;
             }
 
-            /**
-             * Core Optimization: Pre-process text.
-             * Instead of splitting strings inside the loop (expensive),
-             * we build an array of ready-to-render objects.
-             */
-            preprocessText() {
-                const raw = this.dom.textInput.value;
-                // Normalize spaces and split
-                const words = raw.replace(/[\r\n]+/g, " ").split(' ').filter(w => w.length > 0);
+            updateSettingsUI() {
+                const min = parseInt(this.el.minSlide.value);
+                const max = parseInt(this.el.maxSlide.value);
+                this.el.wpmLabel.innerText = this.isGradual ? `${min} → ${max} WPM` : `${min} WPM`;
+            }
 
-                this.state.queue = words.map(word => {
-                    // 1. Determine Pivot
+            processText() {
+                const raw = this.el.text.value;
+                const words = raw.trim().split(/[\s\n]+/);
+
+                this.queue = words.map(word => {
                     const len = word.length;
                     const pivotIdx = len === 1 ? 0 : Math.floor((len - 1) / 2);
-
-                    // 2. Determine Pause Multiplier
-                    let delayType = 'standard';
-                    const lastChar = word.slice(-1);
-                    if (['.', '!', '?'].includes(lastChar)) delayType = 'sentence';
-                    else if ([',', ';', ':'].includes(lastChar)) delayType = 'clause';
+                    
+                    let dType = 'std';
+                    const last = word.slice(-1);
+                    if (['.', '!', '?'].includes(last)) dType = 'sent';
+                    else if ([',', ';', ':', '—', '-'].includes(last)) dType = 'clause';
 
                     return {
                         left: word.substring(0, pivotIdx),
                         pivot: word.substring(pivotIdx, pivotIdx + 1),
                         right: word.substring(pivotIdx + 1),
-                        delayType: delayType
+                        type: dType
                     };
                 });
             }
 
             togglePlay() {
-                if (this.state.isPlaying) {
-                    this.pause();
-                } else {
-                    this.start();
-                }
+                this.isPlaying ? this.pause() : this.start();
             }
 
             start() {
-                // If starting from scratch or empty queue
-                if (this.state.queue.length === 0) this.preprocessText();
-                if (this.state.queue.length === 0) return;
-
-                // Loop reset check
-                if (this.state.index >= this.state.queue.length) this.state.index = 0;
-
-                this.state.isPlaying = true;
-                this.dom.btnPlay.textContent = "Pause";
-                this.dom.btnPlay.classList.remove('btn-primary'); // Visual feedback
+                if (this.queue.length === 0) this.processText();
+                if (this.queue.length === 0) return;
                 
+                if (this.index >= this.queue.length) this.index = 0;
+
+                this.isPlaying = true;
+                this.el.playBtn.innerText = "PAUSE";
+                this.el.playBtn.style.background = "#d32f2f"; 
+                
+                this.expectedTime = Date.now();
                 this.tick();
             }
 
             pause() {
-                this.state.isPlaying = false;
-                clearTimeout(this.state.timer);
-                this.dom.btnPlay.textContent = "Resume";
-                this.dom.btnPlay.classList.add('btn-primary');
+                this.isPlaying = false;
+                clearTimeout(this.timer);
+                this.el.playBtn.innerText = "RESUME";
+                this.el.playBtn.style.background = ""; 
             }
 
             reset() {
                 this.pause();
-                this.state.index = 0;
-                this.preprocessText();
-                if (this.state.queue.length > 0) this.render(this.state.queue[0]);
-                this.dom.btnPlay.textContent = "Start Reading";
+                this.index = 0;
+                this.processText();
+                if(this.queue.length > 0) this.render(this.queue[0]);
+                this.el.playBtn.innerText = "START READING";
+                this.el.liveWpm.innerText = "READY";
+                this.el.progress.style.width = "0%";
             }
 
-            render(wordObj) {
-                this.dom.left.textContent = wordObj.left;
-                this.dom.pivot.textContent = wordObj.pivot;
-                this.dom.right.textContent = wordObj.right;
+            render(item) {
+                this.el.left.textContent = item.left;
+                this.el.pivot.textContent = item.pivot;
+                this.el.right.textContent = item.right;
             }
 
-            /**
-             * The Animation Loop
-             */
             tick() {
-                if (!this.state.isPlaying) return;
+                if (!this.isPlaying) return;
 
-                // End of text?
-                if (this.state.index >= this.state.queue.length) {
+                if (this.index >= this.queue.length) {
                     this.pause();
-                    this.dom.btnPlay.textContent = "Restart";
+                    this.el.playBtn.innerText = "RESTART";
+                    this.el.liveWpm.innerText = "DONE";
+                    this.el.progress.style.width = "100%";
                     return;
                 }
 
-                // 1. Get current word object
-                const wordObj = this.state.queue[this.state.index];
-                this.render(wordObj);
+                const item = this.queue[this.index];
+                this.render(item);
 
-                // 2. Calculate WPM (Gradual or Fixed)
-                let currentWPM = parseInt(this.dom.sliderMin.value);
-                
-                if (this.state.isGradual) {
-                    const min = parseInt(this.dom.sliderMin.value);
-                    const max = parseInt(this.dom.sliderMax.value);
-                    const progress = this.state.index / this.state.queue.length;
-                    currentWPM = min + (max - min) * progress;
+                // --- WPM Calc ---
+                let currentWPM = parseInt(this.el.minSlide.value);
+                if (this.isGradual) {
+                    const min = parseInt(this.el.minSlide.value);
+                    const max = parseInt(this.el.maxSlide.value);
+                    const pct = this.index / this.queue.length;
+                    currentWPM = min + (max - min) * pct;
                 }
 
-                // 3. Calculate Delay (Base: 60,000ms / WPM)
-                let msDelay = 60000 / currentWPM;
+                this.el.liveWpm.innerText = Math.round(currentWPM) + " wpm";
+                const progressPct = ((this.index + 1) / this.queue.length) * 100;
+                this.el.progress.style.width = `${progressPct}%`;
 
-                // 4. Apply Pause Modifiers
-                if (wordObj.delayType === 'sentence') {
-                    const mode = this.dom.pauseMode.value;
-                    const val = parseFloat(this.dom.pauseValue.value) || 0;
-                    
-                    if (mode === 'relative') {
-                        msDelay = msDelay * val;
-                    } else {
-                        // For fixed mode, we generally want the word to stay visible for that time
-                        msDelay = val; 
-                    }
-                } else if (wordObj.delayType === 'clause') {
-                    msDelay = msDelay * 1.2; // Fixed slight pause for commas
+                // --- Delay Calc ---
+                let delay = 60000 / currentWPM;
+
+                if (item.type === 'sent') {
+                    const val = parseFloat(this.el.pValue.value) || 0;
+                    delay = (this.el.pMode.value === 'relative') ? delay * val : val;
+                } else if (item.type === 'clause') {
+                    delay *= 1.2;
                 }
 
-                // 5. Schedule next tick
-                this.state.index++;
-                this.state.timer = setTimeout(() => this.tick(), msDelay);
-            }
-            
-            updateUI() {
-                this.handleSliderChange();
-                this.dom.sliderMax.style.display = this.dom.toggleGradual.checked ? 'block' : 'none';
-                
-                // Apply initial colors
-                this.dom.left.style.color = this.dom.colorText.value;
-                this.dom.right.style.color = this.dom.colorText.value;
-                this.dom.pivot.style.color = this.dom.colorPivot.value;
+                // --- Drift Correction ---
+                const now = Date.now();
+                const drift = now - this.expectedTime;
+                if (drift > delay) this.expectedTime = now;
+                this.expectedTime += delay;
+                const nextDelay = Math.max(0, delay - drift);
+
+                this.index++;
+                this.timer = setTimeout(() => this.tick(), nextDelay);
             }
         }
 
-        // Initialize App
         const app = new SpeedReader();
-
     </script>
 </body>
 </html>
