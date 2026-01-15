@@ -53,7 +53,7 @@ A major flaw in standard RSVP readers is **isochrony**—displaying every word f
 
 ---
 
-## 🛠 Technical Implementation
+## Technical Implementation
 
 ### Parsing & Memoization
 
