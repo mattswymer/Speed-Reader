@@ -45,6 +45,7 @@
             resize: vertical;
             border-radius: 5px;
             box-sizing: border-box;
+            line-height: 1.5;
         }
 
         /* Middle: Controls */
@@ -76,13 +77,23 @@
             letter-spacing: 1px;
         }
 
-        select, input[type="color"] {
+        select, input[type="color"], input[type="number"] {
             background: #222;
             color: white;
             border: 1px solid var(--ui-light-gray);
             padding: 5px;
             border-radius: 4px;
             cursor: pointer;
+        }
+        
+        input[type="number"] {
+            width: 70px;
+            cursor: text;
+        }
+
+        .flex-row {
+            display: flex;
+            gap: 10px;
         }
 
         /* Slider Logic */
@@ -251,7 +262,9 @@
 <body>
 
     <div id="input-section">
-        <textarea id="sourceText" placeholder="Paste your text here to begin reading...">Speed reading is the process of rapidly recognizing and absorbing phrases or sentences on a page all at once, rather than identifying individual words.</textarea>
+        <textarea id="sourceText" placeholder="Paste your text here to begin reading...">Eye fatigue while reading often comes from the constant, repetitive motion our eyes are forced to make across a static page or screen. Each line requires a sequence of small jumps called saccades, punctuated by brief stops where the brain processes text. Over long periods, this back-and-forth motion strains the eye muscles, dries the eyes, and increases cognitive load as readers repeatedly lose their place, reorient, and refocus. The result is familiar to many readers: headaches, blurred vision, reduced focus, and a gradual decline in reading efficiency the longer a session lasts.
+When the words move instead of the eyes, much of that physical strain is reduced. Techniques such as rapid serial visual presentation (RSVP) keep the text centered in a fixed focal point, allowing the eyes to remain relatively still while the brain does the work of processing language. By eliminating constant saccades and regressions, readers expend less energy on eye movement and more on comprehension. This can feel surprisingly natural after a short adjustment period, as the visual system shifts from navigation to absorption.
+This change in mechanics can also improve both reading speed and understanding. With fewer interruptions from line breaks, page turns, or rereading lost spots, readers maintain a more consistent rhythm and cognitive flow. The brain receives information in a steady stream, which can enhance pattern recognition and reduce mental friction. For many readers, especially those prone to fatigue or distraction, moving text creates a smoother, more sustainable reading experience that supports faster intake without sacrificing comprehension.</textarea>
     </div>
 
     <div id="controls-section">
@@ -270,6 +283,17 @@
         </div>
 
         <div class="control-group">
+            <label>Sentence Pause</label>
+            <div class="flex-row">
+                <select id="pauseMode">
+                    <option value="relative">Relative (x)</option>
+                    <option value="constant">Fixed (ms)</option>
+                </select>
+                <input type="number" id="pauseValue" value="2.0" step="0.1" min="0">
+            </div>
+        </div>
+
+        <div class="control-group">
             <label>Text Color</label>
             <input type="color" id="textColor" value="#ffffff">
         </div>
@@ -281,17 +305,17 @@
         <div class="slider-container">
             <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
                 <label>Speed (WPM)</label>
-                <span class="speed-display" id="wpmDisplay">300 WPM</span>
+                <span class="speed-display" id="wpmDisplay">200 → 800 WPM</span>
             </div>
             
             <div class="range-wrapper">
-                <input type="range" id="speedSlider" min="10" max="1000" value="300">
-                <input type="range" id="endSpeedSlider" min="10" max="1000" value="600" style="display: none; opacity: 0.7;">
+                <input type="range" id="speedSlider" min="10" max="1000" value="200">
+                <input type="range" id="endSpeedSlider" min="10" max="1000" value="800" style="display: block; opacity: 0.7;">
             </div>
         </div>
 
         <div class="toggle-container">
-            <input type="checkbox" id="gradualToggle">
+            <input type="checkbox" id="gradualToggle" checked>
             <label for="gradualToggle">Gradual Increase</label>
         </div>
     </div>
@@ -301,9 +325,9 @@
         <div class="reticle-guides"></div>
         
         <div id="word-display">
-            <span class="w-left">Speed</span>
-            <span class="w-pivot">R</span>
-            <span class="w-right">eader</span>
+            <span class="w-left">Eye</span>
+            <span class="w-pivot">F</span>
+            <span class="w-right">atigue</span>
         </div>
     </div>
 
@@ -327,13 +351,15 @@
         const gradualToggle = document.getElementById('gradualToggle');
         const wpmDisplay = document.getElementById('wpmDisplay');
         const playPauseBtn = document.getElementById('playPauseBtn');
+        const pauseModeSelect = document.getElementById('pauseMode');
+        const pauseValueInput = document.getElementById('pauseValue');
 
         // --- State Variables ---
         let words = [];
         let currentIndex = 0;
         let isPlaying = false;
         let timer = null;
-        let isGradual = false;
+        let isGradual = true; 
 
         // --- Event Listeners ---
         
@@ -355,10 +381,21 @@
             isGradual = e.target.checked;
             if (isGradual) {
                 endSpeedSlider.style.display = 'block';
-                wpmDisplay.innerText = `${speedSlider.value} → ${endSpeedSlider.value} WPM`;
             } else {
                 endSpeedSlider.style.display = 'none';
-                wpmDisplay.innerText = `${speedSlider.value} WPM`;
+            }
+            updateWpmLabel();
+        });
+
+        // Pause Logic UI updates
+        pauseModeSelect.addEventListener('change', (e) => {
+            if (e.target.value === 'relative') {
+                pauseValueInput.value = "2.0";
+                pauseValueInput.step = "0.1";
+            } else {
+                // Constant
+                pauseValueInput.value = "500";
+                pauseValueInput.step = "50";
             }
         });
 
@@ -368,7 +405,6 @@
 
         function updateWpmLabel() {
             if (isGradual) {
-                // Ensure Min is not > Max for logic sanity, though not strictly required
                 wpmDisplay.innerText = `${speedSlider.value} → ${endSpeedSlider.value} WPM`;
             } else {
                 wpmDisplay.innerText = `${speedSlider.value} WPM`;
@@ -378,10 +414,8 @@
         // --- Core Logic ---
 
         function processText() {
-            // Split text by spaces, newlines, tabs, and filter empty strings
             const raw = sourceText.value;
-            // Clean up text: replace newlines with spaces
-            const cleaned = raw.replace(/\n/g, " ");
+            const cleaned = raw.replace(/[\r\n]+/g, " ");
             words = cleaned.split(' ').filter(w => w.length > 0);
         }
 
@@ -395,16 +429,15 @@
 
         function start() {
             if (words.length === 0) processText();
-            if (words.length === 0) return; // Still empty?
+            if (words.length === 0) return;
             
-            // If we reached the end, restart
             if (currentIndex >= words.length) {
                 currentIndex = 0;
             }
 
             isPlaying = true;
             playPauseBtn.innerText = "Pause";
-            playPauseBtn.classList.remove('primary'); // Visual toggle
+            playPauseBtn.classList.remove('primary');
             
             runLoop();
         }
@@ -425,10 +458,6 @@
         }
 
         function getPivotIndex(word) {
-            // Find the middle character. 
-            // 1 letter: index 0
-            // 2 letters: index 0 (left bias) or 1. Let's do Math.floor((length-1)/2)
-            // 5 letters: index 2.
             const len = word.length;
             if (len === 1) return 0;
             return Math.floor((len - 1) / 2);
@@ -459,27 +488,36 @@
             const word = words[currentIndex];
             renderWord(word);
 
-            // Calculate Delay
+            // 1. Calculate Standard Delay based on Speed
             let currentWPM = parseInt(speedSlider.value);
-
             if (isGradual) {
                 const startWPM = parseInt(speedSlider.value);
                 const endWPM = parseInt(endSpeedSlider.value);
-                // Calculate progress (0.0 to 1.0)
                 const progress = currentIndex / words.length;
                 currentWPM = startWPM + (endWPM - startWPM) * progress;
             }
-
-            // Standard Formula: 60 seconds / WPM = seconds per word
-            // Convert to ms: 60000 / WPM
-            // Add a slight pause for punctuation (comma, period)
             let delay = 60000 / currentWPM;
 
+            // 2. Adjust for Punctuation
             const lastChar = word.slice(-1);
-            if (lastChar === '.' || lastChar === '!' || lastChar === '?') {
-                delay = delay * 1.5; // 50% longer pause for sentences
-            } else if (lastChar === ',' || lastChar === ';' || lastChar === ':') {
-                delay = delay * 1.2; // 20% longer pause for clauses
+            const isSentenceEnd = (lastChar === '.' || lastChar === '!' || lastChar === '?');
+            const isClauseEnd = (lastChar === ',' || lastChar === ';' || lastChar === ':');
+
+            if (isSentenceEnd) {
+                const mode = pauseModeSelect.value;
+                const val = parseFloat(pauseValueInput.value) || 0;
+
+                if (mode === 'relative') {
+                    delay = delay * val; // Multiplier
+                } else {
+                    // Constant mode: The word stays on screen for exactly X ms
+                    // or delay + X? Usually "Constant Pause" implies fixed duration. 
+                    // Let's treat it as the TOTAL time the word is visible.
+                    delay = val; 
+                }
+            } else if (isClauseEnd) {
+                // Clause pause remains standard (1.2x) to prevent over-complication
+                delay = delay * 1.2; 
             }
 
             currentIndex++;
@@ -487,7 +525,8 @@
         }
 
         // Initialize display
-        resetReader();
+        processText();
+        if(words.length > 0) renderWord(words[0]);
 
     </script>
 </body>
