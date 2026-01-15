@@ -49,11 +49,17 @@
             border-color: #444;
             box-shadow: 0 0 100px rgba(0,0,0,1);
             z-index: 100;
-            cursor: default; /* Indicates this area is safe/active */
+            cursor: default;
         }
-        /* Clickable background indicator for focus mode */
+        /* Show player controls ONLY in focus mode */
+        body.focus-mode .focus-player-controls {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+        
         body.focus-mode {
-            cursor: zoom-out; /* Hint to user they can click to exit */
+            cursor: zoom-out; 
         }
 
         /* Header */
@@ -170,14 +176,13 @@
         
         input[type="color"] { padding: 0; height: 34px; cursor: pointer; }
         
-        /* Warning for contrast */
         .warning-icon {
             display: inline-block;
             color: #ff9800;
             font-size: 14px;
             margin-left: 5px;
             cursor: help;
-            display: none; /* Hidden by default */
+            display: none; 
         }
 
         /* Sliders */
@@ -229,7 +234,6 @@
             border-radius: 2px;
         }
 
-        /* Checkbox */
         .checkbox-row {
             display: flex;
             align-items: center;
@@ -244,7 +248,7 @@
         /* 3. Reader HUD */
         #reader-hud {
             width: 100%;
-            height: 350px; /* Slightly taller for larger font */
+            height: 350px; 
             background-color: #000;
             border: 1px solid var(--border-color);
             border-radius: var(--radius);
@@ -262,10 +266,9 @@
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
             pointer-events: none;
-            z-index: 1; /* Behind text */
+            z-index: 1; 
         }
         
-        /* Vertical Notches */
         .reticle .notch {
             position: absolute;
             left: 50%;
@@ -277,7 +280,6 @@
         .notch-top { top: 0; }
         .notch-bottom { bottom: 0; }
         
-        /* Center Vertical Line */
         .reticle .guide-vert {
             position: absolute;
             left: 50%;
@@ -289,7 +291,6 @@
             transform: translateX(-50%);
         }
 
-        /* Horizontal Framing Lines */
         .reticle .guide-horiz {
             position: absolute;
             left: 2%; 
@@ -299,6 +300,40 @@
         }
         .guide-above { top: 35%; }
         .guide-below { bottom: 35%; }
+
+        /* Focus Mode Controls (Hidden by default) */
+        .focus-player-controls {
+            position: absolute;
+            bottom: 30px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            z-index: 50;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            transform: translateY(10px);
+        }
+
+        .focus-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            backdrop-filter: blur(5px);
+        }
+        .focus-btn:hover { background: rgba(255,255,255,0.2); transform: scale(1.1); }
+        .focus-btn:active { transform: scale(0.95); }
 
 
         /* Word Display */
@@ -358,6 +393,9 @@
         
         .btn-reset { background: #222; color: #888; }
         .btn-reset:hover { background: #333; color: white; }
+        
+        .btn-rewind { background: #333; color: #ccc; padding: 14px 25px; font-size: 18px; }
+        .btn-rewind:hover { background: #444; color: white; }
 
         .btn-play { background: var(--accent-color); color: white; box-shadow: 0 4px 15px rgba(74, 144, 226, 0.2); }
         .btn-play:hover { background: var(--accent-hover); transform: translateY(-1px); }
@@ -460,10 +498,16 @@ This change in mechanics can also improve both reading speed and understanding. 
 
             <div class="hud-stat stat-wpm" id="live-wpm">READY</div>
             <div class="hud-stat stat-progress" id="progress-bar"></div>
+
+            <div class="focus-player-controls">
+                <button class="focus-btn" id="focusRewind" title="Rewind 5 Words">«</button>
+                <button class="focus-btn" id="focusPlay" title="Play/Pause">▶</button>
+            </div>
         </div>
 
         <div class="action-bar">
             <button class="btn-reset" onclick="app.reset()">Reset (Esc)</button>
+            <button class="btn-rewind" onclick="app.rewind()">«</button>
             <button class="btn-play" id="btn-play" onclick="app.togglePlay()">Start Reading (Space)</button>
         </div>
 
@@ -485,6 +529,8 @@ This change in mechanics can also improve both reading speed and understanding. 
                     liveWpm: document.getElementById('live-wpm'),
                     progress: document.getElementById('progress-bar'),
                     playBtn: document.getElementById('btn-play'),
+                    focusPlay: document.getElementById('focusPlay'),
+                    focusRewind: document.getElementById('focusRewind'),
                     minSlide: document.getElementById('speedMin'),
                     maxSlide: document.getElementById('speedMax'),
                     gradual: document.getElementById('gradualToggle'),
@@ -570,10 +616,23 @@ This change in mechanics can also improve both reading speed and understanding. 
                         e.preventDefault();
                         this.reset();
                     }
+                    if (e.code === 'ArrowLeft') {
+                        e.preventDefault();
+                        this.rewind();
+                    }
                 });
 
-                // FIXED: Global Click to Exit Focus Mode
-                // Now ignores the toggle button itself to prevent immediate toggle-off
+                // Focus Mode Controls
+                this.el.focusRewind.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent closing focus mode
+                    this.rewind();
+                });
+                this.el.focusPlay.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.togglePlay();
+                });
+
+                // Global Click to Exit Focus Mode
                 document.addEventListener('click', (e) => {
                     if (document.body.classList.contains('focus-mode')) {
                         // If click is NOT inside reader-hud AND NOT the toggle button, exit focus mode
@@ -657,8 +716,11 @@ This change in mechanics can also improve both reading speed and understanding. 
                 if (this.index >= this.queue.length) this.index = 0;
 
                 this.isPlaying = true;
+                
+                // Update both buttons
                 this.el.playBtn.innerText = "PAUSE";
                 this.el.playBtn.style.background = "#d32f2f"; 
+                this.el.focusPlay.innerText = "||"; 
                 
                 this.expectedTime = Date.now();
                 this.tick();
@@ -667,8 +729,31 @@ This change in mechanics can also improve both reading speed and understanding. 
             pause() {
                 this.isPlaying = false;
                 if (this.timer) clearTimeout(this.timer);
+                
+                // Update both buttons
                 this.el.playBtn.innerText = "RESUME";
                 this.el.playBtn.style.background = ""; 
+                this.el.focusPlay.innerText = "▶"; 
+            }
+            
+            rewind() {
+                // Jump back 5 words (or to 0)
+                this.index = Math.max(0, this.index - 5);
+                
+                // If paused, we must manually update the display
+                // If playing, the next tick (which is already queued) might overwrite this, 
+                // so it's safer to restart the tick loop if playing to feel "instant".
+                if (this.isPlaying) {
+                     // Just let the next tick handle it, but update expectedTime to prevent drift catch-up
+                     this.expectedTime = Date.now(); 
+                     // Force immediate render so it doesn't wait for the delay
+                     if (this.queue[this.index]) this.render(this.queue[this.index]);
+                } else {
+                    if (this.queue[this.index]) {
+                        this.render(this.queue[this.index]);
+                        this.updateHUD(); // Update progress bar immediately
+                    }
+                }
             }
 
             reset() {
@@ -686,6 +771,13 @@ This change in mechanics can also improve both reading speed and understanding. 
                 this.el.pivot.textContent = item.pivot;
                 this.el.right.textContent = item.right;
             }
+            
+            // Separated HUD logic so Rewind can use it
+            updateHUD(currentWPM = parseInt(this.el.minSlide.value)) {
+                 this.el.liveWpm.innerText = Math.round(currentWPM) + " wpm";
+                 const progressPct = ((this.index + 1) / this.queue.length) * 100;
+                 this.el.progress.style.width = `${progressPct}%`;
+            }
 
             tick() {
                 if (!this.isPlaying) return;
@@ -693,6 +785,7 @@ This change in mechanics can also improve both reading speed and understanding. 
                 if (this.index >= this.queue.length) {
                     this.pause();
                     this.el.playBtn.innerText = "RESTART";
+                    this.el.focusPlay.innerText = "↺"; 
                     this.el.liveWpm.innerText = "DONE";
                     this.el.progress.style.width = "100%";
                     return;
@@ -710,10 +803,7 @@ This change in mechanics can also improve both reading speed and understanding. 
                     currentWPM = min + (max - min) * pct;
                 }
 
-                // UI Updates
-                this.el.liveWpm.innerText = Math.round(currentWPM) + " wpm";
-                const progressPct = ((this.index + 1) / this.queue.length) * 100;
-                this.el.progress.style.width = `${progressPct}%`;
+                this.updateHUD(currentWPM);
 
                 // --- Delay Calc ---
                 let delay = 60000 / currentWPM;
@@ -727,7 +817,6 @@ This change in mechanics can also improve both reading speed and understanding. 
                 } 
                 
                 // 2. Dynamic Word Length Logic
-                // If word is > 8 chars, increase delay linearly
                 if (item.len > 8) {
                     const lenFactor = Math.max(1, item.len / 6);
                     delay *= lenFactor;
